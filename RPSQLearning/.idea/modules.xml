@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RPS.iml" filepath="$PROJECT_DIR$/.idea/RPS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OmokQLearning-master.iml" filepath="$PROJECT_DIR$/.idea/OmokQLearning-master.iml" />
     </modules>
   </component>
 </project>
