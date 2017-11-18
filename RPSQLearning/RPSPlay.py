@@ -35,7 +35,6 @@ def playGame(env, sess):
 			currentState = env.getStateInverse()
 
 		action = env.getAction(sess, currentState)
-		nextState, reward, gameOver = env.act(currentPlayer, action)
 
 		player = input("Enter your choice (R/P/S): ")
 		player = player.upper()
@@ -97,6 +96,29 @@ def main(_):
 	sess.close()
 #------------------------------------------------------------
 
+def submitCard(playerId, card, score):
+	# 환경 인스턴스 생성
+	env = RPSEnvironment()
+	env.reset()
+
+	# 텐서플로우 초기화
+	sess = tf.Session()
+	sess.run(tf.global_variables_initializer())
+
+	currentPlayer = RPS_PLAYER1
+
+	if currentPlayer == RPS_PLAYER1:
+		currentState = env.getState()
+	else:
+		currentState = env.getStateInverse()
+
+	action = env.getAction(sess, currentState)
+
+	return action
+
+def submitMatch(playerId, match):
+
+	print(playerId, match)
 #------------------------------------------------------------
 # 메인 함수 실행
 #------------------------------------------------------------
