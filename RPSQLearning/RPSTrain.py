@@ -298,6 +298,8 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 
 			if randf(0, 1) <= epsilon:
 				action = env.getActionRandom()
+			elif randf(0, 1) <= 0.4:
+				action = env.getActionRandom()
 			else:
 				action = env.getAction(sess, currentState)
 
@@ -328,7 +330,7 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 
 		# print(targets)
 
-		if( (i % 10 == 0) and (i != 0) ):
+		if( (i % 100 == 0) and (i != 0) ):
 			save_path = saver.save(sess, os.getcwd() + "/RPSModel.ckpt")
 			print("Model saved in file: %s" % save_path)
 #------------------------------------------------------------

@@ -38,6 +38,7 @@ def playGame(env, sess):
 
 		player = input("Enter your choice (R/P/S): ")
 		player = player.upper()
+
 		while player != "R" and player != "P" and player != "S":
 			player = input("Enter your choice (R/P/S): ")
 			player = player.upper()
@@ -49,11 +50,20 @@ def playGame(env, sess):
 		else:
 			RSP = 0
 
-		if rules[RSP] == action:
+		if action == 0:
+			print("AI choice: S")
+		elif action == 1:
+			print("AI choice: R")
+		else:
+			print("AI choice: P")
+
+		env.act(RPS_PLAYER2, RSP)
+
+		if rules[action] == RSP:
 			player_score += 1
 			print("Player Win")
 			print(player_score, " : ", ai_score)
-		elif rules[action] == RSP:
+		elif rules[RSP] == action:
 			ai_score += 1
 			print("AI Win")
 			print(player_score, " : ", ai_score)
