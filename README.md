@@ -1,3 +1,1 @@
-# RPS-with-AI
-
-pip install -r requirements.txt
+﻿RPS-with-AI
