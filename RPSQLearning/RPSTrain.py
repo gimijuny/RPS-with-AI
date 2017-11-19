@@ -146,25 +146,18 @@ class RPSEnvironment():
 	#--------------------------------
 	def act(self, player, action):
 
-		self.updateState(player, action, self.recode)
-
-
-		if rules[self.recode] == action:
-			if player == RPS_PLAYER1:
-				self.PLAYER1_SCORE += 1
-				self.recode = action
-			else:
-				self.PLAYER2_SCORE += 1
-				self.recode = action
-		elif rules[action] == self.recode:
-			if player == RPS_PLAYER1:
-				self.PLAYER2_SCORE += 1
-				self.recode = action
-			else:
-				self.PLAYER1_SCORE += 1
-				self.recode = action
-		else:
+		if player == RPS_PLAYER1:
+			self.updateState(player, action, self.recode)
 			self.recode = action
+		elif player == RPS_PLAYER2:
+			self.updateState(player, action, self.recode)
+
+			if rules[self.recode] == action:
+				self.PLAYER2_SCORE += 1
+			elif rules[action] == self.recode:
+				self.PLAYER1_SCORE += 1
+			else:
+				self.recode = action
 
 		gameOver, reward = self.isGameOver(player)
 
@@ -296,9 +289,9 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 			else:
 				currentState = env.getStateInverse()
 
-			if randf(0, 1) <= epsilon:
-				action = env.getActionRandom()
-			elif randf(0, 1) <= 0.4:
+			# if randf(0, 1) <= epsilon:
+			# 	action = env.getActionRandom()
+			if randf(0, 1) <= 0.4:
 				action = env.getActionRandom()
 			else:
 				action = env.getAction(sess, currentState)
@@ -330,7 +323,7 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 
 		# print(targets)
 
-		if( (i % 100 == 0) and (i != 0) ):
+		if( (i % 10 == 0) and (i != 0) ):
 			save_path = saver.save(sess, os.getcwd() + "/RPSModel.ckpt")
 			print("Model saved in file: %s" % save_path)
 #------------------------------------------------------------
@@ -355,7 +348,7 @@ def main(_):
 	# 세이브 설정
 	saver = tf.train.Saver()
 
-	# 모델 로드
+	# # 모델 로드
 	if os.path.isfile(os.getcwd() + "/RPSModel.ckpt.index") == True:
 		saver.restore(sess, os.getcwd() + "/RPSModel.ckpt")
 		print('Saved model is loaded!')

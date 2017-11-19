@@ -35,6 +35,7 @@ def playGame(env, sess):
 			currentState = env.getStateInverse()
 
 		action = env.getAction(sess, currentState)
+		env.act(currentPlayer, action)
 
 		player = input("Enter your choice (R/P/S): ")
 		player = player.upper()
@@ -47,17 +48,18 @@ def playGame(env, sess):
 			RSP = 1
 		elif player == "P":
 			RSP = 2
-		else:
+		elif player == "S":
 			RSP = 0
 
 		if action == 0:
 			print("AI choice: S")
 		elif action == 1:
 			print("AI choice: R")
-		else:
+		elif action == 2:
 			print("AI choice: P")
 
-		env.act(RPS_PLAYER2, RSP)
+		# currentState = env.getStateInverse()
+		gameOver = env.act(RPS_PLAYER2, RSP)
 
 		if rules[action] == RSP:
 			player_score += 1
