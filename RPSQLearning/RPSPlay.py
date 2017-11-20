@@ -117,35 +117,6 @@ def main(_):
 	sess.close()
 #------------------------------------------------------------
 
-def submitCard(playerId, card, score):
-	# 환경 인스턴스 생성
-	env = RPSEnvironment()
-	env.reset()
-
-	# 텐서플로우 초기화
-	sess = tf.Session()
-	sess.run(tf.global_variables_initializer())
-
-	currentPlayer = RPS_PLAYER1
-
-	if currentPlayer == RPS_PLAYER1:
-		currentState = env.getState()
-	else:
-		currentState = env.getStateInverse()
-
-	if random.randint(0, 1) <= 0.4:
-		action = env.getActionRandom()
-	else:
-		action = env.getAction(sess, currentState)
-
-	env.act(currentPlayer, action)
-	env.act(RPS_PLAYER2, card)
-
-	return action
-
-def submitMatch(playerId, match):
-
-	print(playerId, match)
 #------------------------------------------------------------
 # 메인 함수 실행
 #------------------------------------------------------------
