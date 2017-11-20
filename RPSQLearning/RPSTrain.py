@@ -137,9 +137,8 @@ class RPSEnvironment():
 	#--------------------------------
 	# 상태 업데이트
 	#--------------------------------
-	def updateState(self, player, action, recode):
-		num = action + (recode * 3)
-		self.state[num] = player
+	def updateState(self, player, action):
+		self.state[action] = player
 
 	#--------------------------------
 	# 행동 수행
@@ -147,10 +146,10 @@ class RPSEnvironment():
 	def act(self, player, action):
 
 		if player == RPS_PLAYER1:
-			self.updateState(player, action, self.recode)
+			self.updateState(player, action)
 			self.recode = action
 		elif player == RPS_PLAYER2:
-			self.updateState(player, action, self.recode)
+			self.updateState(player, action)
 
 			if rules[self.recode] == action:
 				self.PLAYER2_SCORE += 1
@@ -291,7 +290,7 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 
 			# if randf(0, 1) <= epsilon:
 			# 	action = env.getActionRandom()
-			if randf(0, 1) <= 0.4:
+			if random.randint(0, 1) <= 0.4:
 				action = env.getActionRandom()
 			else:
 				action = env.getAction(sess, currentState)

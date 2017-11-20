@@ -3,6 +3,8 @@
 from RPSTrain import RPSEnvironment, X, W1, b1, input_layer, W2, b2, hidden_layer, W3, b3, output_layer, Y, cost, optimizer
 import tensorflow as tf
 import os
+import random
+import math
 
 #------------------------------------------------------------
 # 변수 설정
@@ -34,7 +36,11 @@ def playGame(env, sess):
 		else:
 			currentState = env.getStateInverse()
 
-		action = env.getAction(sess, currentState)
+		if random.randint(0, 1) <= 0.4:
+			action = env.getActionRandom()
+		else:
+			action = env.getAction(sess, currentState)
+
 		env.act(currentPlayer, action)
 
 		player = input("Enter your choice (R/P/S): ")
@@ -58,8 +64,11 @@ def playGame(env, sess):
 		elif action == 2:
 			print("AI choice: P")
 
-		# currentState = env.getStateInverse()
-		gameOver = env.act(RPS_PLAYER2, RSP)
+		currentState = env.getStateInverse()
+		env.act(RPS_PLAYER2, RSP)
+
+		print(env.PLAYER1_SCORE)
+		print(env.PLAYER2_SCORE)
 
 		if rules[action] == RSP:
 			player_score += 1
@@ -124,7 +133,13 @@ def submitCard(playerId, card, score):
 	else:
 		currentState = env.getStateInverse()
 
-	action = env.getAction(sess, currentState)
+	if random.randint(0, 1) <= 0.4:
+		action = env.getActionRandom()
+	else:
+		action = env.getAction(sess, currentState)
+
+	env.act(currentPlayer, action)
+	env.act(RPS_PLAYER2, card)
 
 	return action
 
