@@ -4,8 +4,6 @@ from RPSTrain import RPSEnvironment, X, W1, b1, input_layer, W2, b2, hidden_laye
 import tensorflow as tf
 import os
 import random
-import math
-import test
 
 #------------------------------------------------------------
 # 변수 설정
@@ -179,8 +177,8 @@ def main(_):
 	saver = tf.train.Saver()
 
 	# 모델 로드
-	if os.path.isfile(os.getcwd() + "/RPSModel2.ckpt.index") == True:
-		saver.restore(sess, os.getcwd() + "/RPSModel2.ckpt")
+	if os.path.isfile(os.getcwd() + "/RPSModel.ckpt.index") == True:
+		saver.restore(sess, os.getcwd() + "/RPSModel.ckpt")
 		print('saved model is loaded!')
 	
 	# 게임 플레이
@@ -190,35 +188,6 @@ def main(_):
 	sess.close()
 #------------------------------------------------------------
 
-def submitCard(playerId, card, score):
-	# 환경 인스턴스 생성
-	env = RPSEnvironment()
-	env.reset()
-
-	# 텐서플로우 초기화
-	sess = tf.Session()
-	sess.run(tf.global_variables_initializer())
-
-	currentPlayer = RPS_PLAYER1
-
-	if currentPlayer == RPS_PLAYER1:
-		currentState = env.getState()
-	else:
-		currentState = env.getStateInverse()
-
-	if random.randint(0, 1) <= 0.4:
-		action = env.getActionRandom()
-	else:
-		action = env.getAction(sess, currentState)
-
-	env.act(currentPlayer, action)
-	env.act(RPS_PLAYER2, card)
-
-	return action
-
-def submitMatch(playerId, match):
-
-	print(playerId, match)
 #------------------------------------------------------------
 # 메인 함수 실행
 #------------------------------------------------------------

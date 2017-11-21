@@ -21,11 +21,11 @@ PLAYER2_SCORE = 0
 MAX_SCORE = 5
 
 nbActions = 3 # rock/scissors/paper
-nbStates = nbActions
+nbStates = 66
 hiddenSize = 100
 maxMemory = 500
 batchSize = 50
-epoch = 10
+epoch = 100
 epsilonStart = 1
 epsilonDiscount = 0.999
 epsilonMinimumValue = 0.1
@@ -77,7 +77,7 @@ class RPSEnvironment():
 	# 초기화
 	#--------------------------------
 	def __init__(self):
-		self.nbStates = nbActions
+		self.nbStates = 66
 		self.state = np.zeros(self.nbStates, dtype = np.uint8)
 		self.PLAYER1_SCORE = PLAYER1_SCORE
 		self.PLAYER2_SCORE = PLAYER2_SCORE
@@ -96,8 +96,6 @@ class RPSEnvironment():
 	#--------------------------------
 	def getState(self):
 		return np.reshape(self.state, (1, self.nbStates))
-
-
 
 	#--------------------------------
 	# 플레이어가 바뀐 현재 상태 구함
@@ -137,19 +135,24 @@ class RPSEnvironment():
 	#--------------------------------
 	# 상태 업데이트
 	#--------------------------------
-	def updateState(self, player, action):
-		self.state[action] += 1
+	def updateState(self, player):
+		if player == RPS_PLAYER1:
+			self.state[PLAYER1_SCORE*10 + PLAYER2_SCORE] = player
+		elif player == RPS_PLAYER2:
+			self.state[PLAYER2_SCORE*10 + PLAYER1_SCORE] = player
 
 		# print(player, " state: ", self.state)
 
+	def deleteState(self, player):
+		if player == RPS_PLAYER1:
+			self.state[PLAYER1_SCORE*10 + PLAYER2_SCORE] = 0
+		elif player == RPS_PLAYER2:
+			self.state[PLAYER2_SCORE*10 + PLAYER1_SCORE] = 0
 	#--------------------------------
 	# 행동 수행
 	#--------------------------------
 	def act(self, player, action):
 
-		reward_add = 0
-		# print("Player1_Previous: ", self.PLAYER1_PREVIOUS)
-		# print("Player2_Previous: ", self.PLAYER1_PREVIOUS)
 		if player == RPS_PLAYER1:
 
 			if self.PLAYER1_PREVIOUS == None:
@@ -163,34 +166,35 @@ class RPSEnvironment():
 			else:
 				if rules[self.PLAYER1_RSP] == action:
 					if action == self.PLAYER2_PREVIOUS:
+						self.deleteState(player)
 						self.PLAYER2_SCORE += 2
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
-						reward_add += 0.05
-						self.updateState(player, action)
+						self.updateState(player)
 					else:
+						self.deleteState(player)
 						self.PLAYER2_SCORE += 1
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
-						self.updateState(player, action)
+						self.updateState(player)
 				elif rules[action] == self.PLAYER1_RSP:
 					if self.PLAYER1_RSP == self.PLAYER1_PREVIOUS:
+						self.deleteState(RPS_PLAYER1)
 						self.PLAYER1_SCORE += 2
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
-						self.updateState(RPS_PLAYER1, self.PLAYER1_RSP)
+						self.updateState(RPS_PLAYER1)
 					else:
+						self.deleteState(RPS_PLAYER1)
 						self.PLAYER1_SCORE += 1
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
-						self.updateState(RPS_PLAYER1, self.PLAYER1_RSP)
+						self.updateState(RPS_PLAYER1)
 
-				# print(self.PLAYER1_RSP, ": ", action)
 
 		gameOver, reward = self.isGameOver(player)
 
-		if reward == 0:
-			reward += reward_add
+		# print(player, ": ", action)
 
 		if player == RPS_PLAYER1:
 			nextState = self.getState()
@@ -231,7 +235,7 @@ class ReplayMemory:
 	def __init__(self, maxMemory, discount):
 		self.maxMemory = maxMemory
 		self.discount = discount
-		self.nbStates = nbActions
+		self.nbStates = 66
 
 		self.inputState = np.empty((self.maxMemory, self.nbStates), dtype = np.uint8)
 		self.actions = np.zeros(self.maxMemory, dtype = np.uint8)
@@ -332,7 +336,7 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 			
 			nextState, reward, gameOver = env.act(currentPlayer, action)
 
-			if reward == 1 and currentPlayer == RPS_PLAYER2:
+			if reward == 1 and currentPlayer == RPS_PLAYER1:
 				winCount = winCount + 1
 
 			#--------------------------------
@@ -356,11 +360,9 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 		# print("-----------------------------------------------")
 
 		if( (i % 10 == 0) and (i != 0) ):
-			save_path = saver.save(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
+			save_path = saver.save(sess, os.getcwd() + "/RPSModel.ckpt")
 			print("Model saved in file: %s" % save_path)
 
-	save_path = saver.save(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
-	print("Model saved in file: %s" % save_path)
 #------------------------------------------------------------
 
 #------------------------------------------------------------
@@ -384,13 +386,13 @@ def main(_):
 	saver = tf.train.Saver()
 
 	# # 모델 로드
-	if os.path.isfile(os.getcwd() + "/Model/RPSModel-1000.ckpt.index") == True:
-		saver.restore(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
+	if os.path.isfile(os.getcwd() + "/RPSModel.ckpt.index") == True:
+		saver.restore(sess, os.getcwd() + "/RPSModel.ckpt")
 		print('Saved model is loaded!')
 	
 	# 게임 플레이
 	iteration = 0
-	while iteration < 100:
+	while True:
 		playGame(env, memory, sess, saver, epsilonStart, iteration);
 		iteration += 1
 
