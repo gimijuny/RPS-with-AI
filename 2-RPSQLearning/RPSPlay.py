@@ -5,6 +5,7 @@ import tensorflow as tf
 import os
 import random
 import math
+import test
 
 #------------------------------------------------------------
 # 변수 설정
@@ -19,6 +20,7 @@ rules = {0: 1, 1: 2, 2: 0}
 # 게임 플레이 함수
 #------------------------------------------------------------
 def playGame(env, sess):
+
 	PLAYER1_PREVIOUS = None
 	PLAYER2_PREVIOUS = None
 	PLAYER1_Choice = None
@@ -42,6 +44,7 @@ def playGame(env, sess):
 
 		if random.randint(0, 1) <= 0.4:
 			action = env.getActionRandom()
+			print("random")
 		else:
 			action = env.getAction(sess, currentState)
 
@@ -84,6 +87,7 @@ def playGame(env, sess):
 
 			if random.randint(0, 1) <= 0.4:
 				action2 = env.getActionRandom()
+				print("random")
 			else:
 				action2 = env.getAction(sess, currentState)
 
@@ -113,11 +117,11 @@ def playGame(env, sess):
 			elif action2 == 2:
 				print("AI choice: P")
 
-			# print("PLAYER1 Previous: ", PLAYER1_PREVIOUS)
-			# print("PLAYER2 Previous: ", PLAYER2_PREVIOUS)
-			# print("PLAYER1 choice: ", PLAYER1_Choice)
-			# print("PLAYER2 choice: ", PLAYER2_Choice)
-			# print("PLAYER2 action: ", player2)
+				# print("PLAYER1 Previous: ", PLAYER1_PREVIOUS)
+				# print("PLAYER2 Previous: ", PLAYER2_PREVIOUS)
+				# print("PLAYER1 choice: ", PLAYER1_Choice)
+				# print("PLAYER2 choice: ", PLAYER2_Choice)
+				# print("PLAYER2 action: ", player2)
 
 			env.act(RPS_PLAYER2, RSP2)
 
@@ -151,11 +155,12 @@ def playGame(env, sess):
 			if player_score >= 5:
 				gameOver = True
 				print("Game Over!! Player Winner")
+
 			elif ai_score >= 5:
 				gameOver = True
 				print("Game Over!! ai Winner")
 
-		print("----------------------------------------------")
+			print("----------------------------------------------")
 #------------------------------------------------------------
 
 #------------------------------------------------------------
@@ -174,8 +179,8 @@ def main(_):
 	saver = tf.train.Saver()
 
 	# 모델 로드
-	if os.path.isfile(os.getcwd() + "/RPSModel.ckpt.index") == True:
-		saver.restore(sess, os.getcwd() + "/RPSModel.ckpt")
+	if os.path.isfile(os.getcwd() + "/RPSModel2.ckpt.index") == True:
+		saver.restore(sess, os.getcwd() + "/RPSModel2.ckpt")
 		print('saved model is loaded!')
 	
 	# 게임 플레이

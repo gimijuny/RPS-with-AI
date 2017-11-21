@@ -2,6 +2,7 @@ from RPSTrain import RPSEnvironment, X, W1, b1, input_layer, W2, b2, hidden_laye
 import tensorflow as tf
 import random
 import sys
+import os
 
 #------------------------------------------------------------
 # 변수 설정
@@ -31,6 +32,14 @@ print(sess.run(a+b))
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
+# 세이브 설정
+saver = tf.train.Saver()
+
+# 모델 로드
+if os.path.isfile(os.getcwd() + "/RPSModel2.ckpt.index") == True:
+	saver.restore(sess, os.getcwd() + "/RPSModel2.ckpt")
+	print('saved model is loaded!')
+
 currentPlayer = RPS_PLAYER1
 
 if currentPlayer == RPS_PLAYER1:
@@ -39,6 +48,7 @@ else:
 	currentState = env.getStateInverse()
 if random.randint(0, 1) <= 0.4:
 	action = env.getActionRandom()
+	print("random")
 else:
 	action = env.getAction(sess, currentState)
 

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-
 import tensorflow as tf
 import numpy as np
 import random
@@ -16,7 +14,6 @@ import os
 
 rules = {0: 1, 1: 2, 2: 0}
 
-
 RPS_PLAYER1 = 1
 RPS_PLAYER2 = 2
 PLAYER1_SCORE = 0
@@ -24,11 +21,11 @@ PLAYER2_SCORE = 0
 MAX_SCORE = 5
 
 nbActions = 3 # rock/scissors/paper
-nbStates = nbActions * nbActions
+nbStates = nbActions
 hiddenSize = 100
 maxMemory = 500
 batchSize = 50
-epoch = 100
+epoch = 10
 epsilonStart = 1
 epsilonDiscount = 0.999
 epsilonMinimumValue = 0.1
@@ -80,7 +77,7 @@ class RPSEnvironment():
 	# 초기화
 	#--------------------------------
 	def __init__(self):
-		self.nbStates = nbActions * nbActions
+		self.nbStates = nbActions
 		self.state = np.zeros(self.nbStates, dtype = np.uint8)
 		self.PLAYER1_SCORE = PLAYER1_SCORE
 		self.PLAYER2_SCORE = PLAYER2_SCORE
@@ -141,7 +138,9 @@ class RPSEnvironment():
 	# 상태 업데이트
 	#--------------------------------
 	def updateState(self, player, action):
-		self.state[action] = player
+		self.state[action] += 1
+
+		# print(player, " state: ", self.state)
 
 	#--------------------------------
 	# 행동 수행
@@ -152,13 +151,12 @@ class RPSEnvironment():
 		# print("Player1_Previous: ", self.PLAYER1_PREVIOUS)
 		# print("Player2_Previous: ", self.PLAYER1_PREVIOUS)
 		if player == RPS_PLAYER1:
-			self.updateState(player, action)
+
 			if self.PLAYER1_PREVIOUS == None:
 				self.PLAYER1_PREVIOUS = action
 			else:
 				self.PLAYER1_RSP = action
 		elif player == RPS_PLAYER2:
-			self.updateState(player, action)
 
 			if self.PLAYER2_PREVIOUS == None:
 				self.PLAYER2_PREVIOUS = action
@@ -169,19 +167,25 @@ class RPSEnvironment():
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
 						reward_add += 0.05
+						self.updateState(player, action)
 					else:
 						self.PLAYER2_SCORE += 1
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
+						self.updateState(player, action)
 				elif rules[action] == self.PLAYER1_RSP:
 					if self.PLAYER1_RSP == self.PLAYER1_PREVIOUS:
 						self.PLAYER1_SCORE += 2
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
+						self.updateState(RPS_PLAYER1, self.PLAYER1_RSP)
 					else:
 						self.PLAYER1_SCORE += 1
 						self.PLAYER1_PREVIOUS = None
 						self.PLAYER2_PREVIOUS = None
+						self.updateState(RPS_PLAYER1, self.PLAYER1_RSP)
+
+				# print(self.PLAYER1_RSP, ": ", action)
 
 		gameOver, reward = self.isGameOver(player)
 
@@ -227,7 +231,7 @@ class ReplayMemory:
 	def __init__(self, maxMemory, discount):
 		self.maxMemory = maxMemory
 		self.discount = discount
-		self.nbStates = 9
+		self.nbStates = nbActions
 
 		self.inputState = np.empty((self.maxMemory, self.nbStates), dtype = np.uint8)
 		self.actions = np.zeros(self.maxMemory, dtype = np.uint8)
@@ -347,12 +351,16 @@ def playGame(env, memory, sess, saver, epsilon, iteration):
 				currentPlayer = RPS_PLAYER1
 
 		print("Epoch " + str(iteration) + str(i) + ": err = " + str(err) + ": Win count = " + str(winCount) )
-
+		# print("-----------------------------------------------")
 		# print(targets)
+		# print("-----------------------------------------------")
 
 		if( (i % 10 == 0) and (i != 0) ):
-			save_path = saver.save(sess, os.getcwd() + "/RPSModel.ckpt")
+			save_path = saver.save(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
 			print("Model saved in file: %s" % save_path)
+
+	save_path = saver.save(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
+	print("Model saved in file: %s" % save_path)
 #------------------------------------------------------------
 
 #------------------------------------------------------------
@@ -376,13 +384,13 @@ def main(_):
 	saver = tf.train.Saver()
 
 	# # 모델 로드
-	if os.path.isfile(os.getcwd() + "/RPSModel.ckpt.index") == True:
-		saver.restore(sess, os.getcwd() + "/RPSModel.ckpt")
+	if os.path.isfile(os.getcwd() + "/Model/RPSModel-1000.ckpt.index") == True:
+		saver.restore(sess, os.getcwd() + "/Model/RPSModel-1000.ckpt")
 		print('Saved model is loaded!')
 	
 	# 게임 플레이
 	iteration = 0
-	while True:
+	while iteration < 100:
 		playGame(env, memory, sess, saver, epsilonStart, iteration);
 		iteration += 1
 
