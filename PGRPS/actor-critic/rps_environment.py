@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import random
 
 rules = {0: 1, 1: 2, 2: 0}
@@ -8,71 +10,112 @@ class RPS():
         self.Player2_Score = 0
         self.Player1_Previous = None
         self.Player2_Previous = None
-        self.states = [0, 0]
+        self.states = [0, 0, 0, 0, 0, 0, 0, 0]
         self.win = 0
         self.lose = 0
         self.draw = 0
 
     def reset(self):
-        self.states = [0, 0]
+        self.states = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.Player1_Previous = None
+        self.Player2_Previous = None
+        self.Player1_Score = 0
+        self.Player2_Score = 0
         return self.states
 
-    def setState(self, state1, state2):
-        self.states = [state1, state2]
+    def setScore(self, score1, score2):
+        self.Player1_Score = score1
+        self.Player2_Score = score2
         return self.states
 
     def setPrevious(self, previous1, previous2):
         self.Player1_Previous = previous1
         self.Player2_Previous = previous2
 
-    def step(self, action):
-        rsp = random.randint(0,2)
+    def step(self, action, rsp):
         print(action, " : ", rsp)
         reward = 0
 
+        done = False
         if self.Player1_Previous == None:
             self.Player1_Previous = action
             self.Player2_Previous = rsp
             if rules[rsp] == action:
-                reward = 0.5
+                reward = 0.05
             elif rules[action] == rsp:
-                reward = -0.5
+                reward = -0.05
 
         else:
             if rules[rsp] == action:
+                done = True
                 self.win += 1
                 if action == self.Player1_Previous:
                     self.Player1_Score += 2
-                    self.states[0] += 2
-                    reward = 1.05
+                    reward = 0.1
                 else:
                     self.Player1_Score += 1
-                    self.states[0] += 1
-                    reward = 1
+                    reward = 0.05
                 self.Player1_Previous = None
                 self.Player2_Previous = None
             elif rules[action] == rsp:
+                done = True
                 self.lose += 1
                 if action == self.Player1_Previous:
                     self.Player2_Score += 2
-                    self.states[1] += 2
-                    reward = -1.05
+                    reward = -0.1
                 else:
                     self.Player2_Score += 1
-                    self.states[1] += 1
-                    reward = -1
+                    reward = -0.05
                 self.Player1_Previous = None
                 self.Player2_Previous = None
             else:
-                reward = 0
                 self.draw += 1
-                done = False
 
-        if self.Player1_Score >= 5 or self.Player2_Score >= 5:
-            done = True
-            self.Player1_Score = 0
-            self.Player2_Score = 0
+        gameOver = self.gameOver()
+
+        states = list()
+        if self.Player1_Previous != None:
+            states.append(self.Player1_Previous)
+            states.append(self.Player2_Previous)
+            if rules[self.Player2_Previous] == self.Player2_Previous:
+                states.append(1)
+            elif rules[self.Player1_Previous] == self.Player1_Previous:
+                states.append(-1)
+            else:
+                states.append(0)
+            states.append(action)
+            states.append(rsp)
+            if rules[rsp] == action:
+                states.append(1)
+            elif rules[action] == rsp:
+                states.append(-1)
+            else:
+                states.append(0)
         else:
-            done = False
+            states.append(action)
+            states.append(rsp)
+            if rules[rsp] == action:
+                states.append(1)
+            elif rules[action] == rsp:
+                states.append(-1)
+            else:
+                states.append(0)
+            states.append(3)
+            states.append(3)
+            states.append(3)
+        states.append(self.Player1_Score)
+        states.append(self.Player2_Score)
 
-        return self.states, reward, done
+        return states, reward, done, gameOver
+
+    def gameOver(self):
+        if self.Player1_Score >= 5:
+            gameOver = True
+            self.reset()
+        elif self.Player2_Score >= 5:
+            gameOver = True
+            self.reset()
+        else:
+            gameOver = False
+
+        return gameOver

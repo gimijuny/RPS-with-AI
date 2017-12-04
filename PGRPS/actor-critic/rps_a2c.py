@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras import backend as K
 from rps_environment import RPS
+import random
 
 EPISODES = 1000
+rules = {0: 1, 1: 2, 2: 0}
 
 class A2CAgent:
     def __init__(self, state_size, action_size):
@@ -28,8 +32,8 @@ class A2CAgent:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("./save_model/rps_actor.h5")
-            self.critic.load_weights("./save_model/rps_critic.h5")
+            self.actor.load_weights("./save_model/rps_actor_10000.h5")
+            self.critic.load_weights("./save_model/rps_critic_10000.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
@@ -108,7 +112,7 @@ class A2CAgent:
 if __name__ == "__main__":
     env = RPS()
 
-    state_size = 2
+    state_size = 8
     action_size = 3
 
     # 액터-크리틱(A2C) 에이전트 생성
@@ -116,36 +120,69 @@ if __name__ == "__main__":
 
     episodes = []
 
+    r1, r2 = 0, 0
+    s1, s2 = 0, 0
+    p1, p2 = 0, 0
+
+    player1_score = 0
+    player2_score = 0
+
+    state = env.reset()
+    state = np.reshape(state, [1, state_size])
     for e in range(EPISODES):
         done = False
-        state = env.reset()
-        state = np.reshape(state, [1, state_size])
+
+        if agent.render:
+            env.render()
+
+        rsp1 = random.randint(0, 2)
+        action1 = agent.get_action(state)
+        next_state, reward, done, gameOver = env.step(action1, rsp1)
+        next_state = np.reshape(next_state, [1, state_size])
+
+        if action1 == 0:
+            s1 += 1
+        elif action1 == 1:
+            r1 += 1
+        else:
+            p1 += 1
+
+        agent.train_model(state, action1, reward, next_state, done)
+
+        state = next_state
 
         while not done:
-            if agent.render:
-                env.render()
-
-            action = agent.get_action(state)
-            next_state, reward, done = env.step(action)
+            action2 = agent.get_action(state)
+            if action2 == 0:
+                s2 += 1
+            elif action2 == 1:
+                r2 += 1
+            else:
+                p2 += 1
+            rsp2 = random.randint(0, 2)
+            next_state, reward, done, gameOver = env.step(action2, rsp2)
             next_state = np.reshape(next_state, [1, state_size])
 
-            agent.train_model(state, action, reward, next_state, done)
+            if rules[rsp2] == action2:
+                if action1 == action2:
+                    player1_score += 2
+                else:
+                    player1_score += 1
+            elif rules[action2] == rsp2:
+                if rsp1 == rsp2:
+                    player2_score += 2
+                else:
+                    player2_score += 1
+
+            agent.train_model(state, action2, reward, next_state, done)
 
             state = next_state
+            if done:
+                # 에피소드마다 학습 결과 출력
+                episodes.append(e)
+                print("episode:", e)
 
-            while not done:
-                action = agent.get_action(state)
-                next_state, reward, done = env.step(action)
-                next_state = np.reshape(next_state, [1, state_size])
+    # agent.actor.save_weights("./save_model/rps_actor_5000.h5")
+    # agent.critic.save_weights("./save_model/rps_critic_5000.h5")
 
-                agent.train_model(state, action, reward, next_state, done)
-
-                state = next_state
-
-                if done:
-                    # 에피소드마다 학습 결과 출력
-                    episodes.append(e)
-                    print("episode:", e)
-
-    agent.actor.save_weights("./save_model/rps_actor.h5")
-    agent.critic.save_weights("./save_model/rps_critic.h5")
+    print(s1, r1, p1, s2, r2, p2)

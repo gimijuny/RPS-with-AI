@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import numpy as np
 from keras.layers import Dense
@@ -29,8 +31,8 @@ class A2CAgent:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("./save_model/rps_actor_10.h5")
-            self.critic.load_weights("./save_model/rps_critic_10.h5")
+            self.actor.load_weights("./save_model/rps_actor_1000.h5")
+            self.critic.load_weights("./save_model/rps_critic_1000.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
@@ -145,8 +147,8 @@ class A2CAgent2:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("./save_model/rps_actor_50.h5")
-            self.critic.load_weights("./save_model/rps_critic_50.h5")
+            self.actor.load_weights("./save_model/rps_actor_3000.h5")
+            self.critic.load_weights("./save_model/rps_critic_3000.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
@@ -244,7 +246,7 @@ if __name__ == "__main__":
     env1 = RPS()
     env2 = RPS()
 
-    state_size = 2
+    state_size = 8
     action_size = 3
 
     # 액터-크리틱(A2C) 에이전트 생성
@@ -255,24 +257,60 @@ if __name__ == "__main__":
     lose = 0
     draw = 0
     n = 0
-    print(agent1, agent2)
     while n < 1000:
-        action1_previous = agent1.submitCard(None, None)
-        action2_previous = agent2.submitCard(None, None)
         done = False
-        print(action1_previous, action2_previous)
+        state1 = env1.reset()
+        state2 = env2.reset()
+        state1 = np.reshape(state1, [1, state_size])
+        state2 = np.reshape(state2, [1, state_size])
+
+        score1 = 0
+        score2 = 0
+
+        if agent1.render:
+            env1.render()
+
+        if agent2.render:
+            env2.render()
+
         while not done:
-            action1_card = agent1.submitCard(action1_previous, action2_previous)
-            action2_card = agent2.submitCard(action2_previous, action1_previous)
+            done2 = False
+            action1_card1 = agent1.get_action(state1)
+            action2_card1 = agent2.get_action(state2)
 
-            if rules[action2_card] == action1_card:
-                win += 1
-                done = True
-            elif rules[action1_card] == action2_card:
-                lose += 1
-                done = True
-            else:
-                draw += 1
+            next_state1, reward, done, gameOver = env1.step(action1_card1, action2_card1)
+            next_state1 = np.reshape(next_state1, [1, state_size])
+            state1 = next_state1
 
+            next_state2, reward, done, gameOver = env2.step(action2_card1, action1_card1)
+            next_state2 = np.reshape(next_state2, [1, state_size])
+            state2 = next_state2
+
+            print("action1_card1: ", action1_card1, "action2_card1: ", action2_card1)
+            while not done:
+                action1_card2 = agent1.get_action(state1)
+
+                action2_card2 = agent2.get_action(state2)
+
+                print("action1_card2: ", action1_card2, "action2_card2: ", action2_card2)
+                if rules[action2_card2] == action1_card2:
+                    done = True
+                    win += 1
+                    if action1_card1 == action1_card2:
+                        score1 += 2
+                    else:
+                        score1 += 1
+                elif rules[action1_card2] == action2_card2:
+                    done = True
+                    lose += 1
+                    if action2_card1 == action2_card2:
+                        score2 += 2
+                    else:
+                        score2 += 1
+                else:
+                    draw += 1
+
+
+        print(n)
         n += 1
-    print(win, lose, draw)
+    print("win: ", win, "lose: ", lose, "승률: ", (win / (win+lose)*100))
