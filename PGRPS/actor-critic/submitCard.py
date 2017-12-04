@@ -44,8 +44,8 @@ class A2CAgent:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("./save_model/rps_actor.h5")
-            self.critic.load_weights("./save_model/rps_critic.h5")
+            self.actor.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor.h5")
+            self.critic.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
