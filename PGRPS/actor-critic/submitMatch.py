@@ -9,19 +9,7 @@ from rps_environment import RPS
 if sys.argv[1] != None:
 	playerId = sys.argv[1]
 if sys.argv[2] != None:
-	player_previous = int(sys.argv[2])
-if sys.argv[3] != "null":
-	ai_previous = int(sys.argv[3])
-else:
-    ai_previous = None
-if sys.argv[4] != "null":
-	player_card = int(sys.argv[4])
-else:
-    player_card = None
-if sys.argv[5] != None:
-	player_score = int(sys.argv[5])
-if sys.argv[6] != None:
-	ai_score = int(sys.argv[6])
+	match = sys.argv[2]
 
 class A2CAgent:
     def __init__(self, state_size, action_size):
@@ -44,8 +32,11 @@ class A2CAgent:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor.h5")
-            self.critic.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic.h5")
+            # self.actor.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor_.h5")
+            # self.critic.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic_.h5")
+
+            self.actor.load_weights("./save_model/rps_actor_300.h5")
+            self.critic.load_weights("./save_model/rps_critic_300.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
@@ -122,26 +113,6 @@ class A2CAgent:
 
 
 if __name__ == "__main__":
-    env = RPS()
-
-    if player_card != None:
-        env.setPrevious(ai_previous, player_previous)
-
-    state_size = 2
-    action_size = 3
-
-    # 액터-크리틱(A2C) 에이전트 생성
-    agent = A2CAgent(state_size, action_size)
-
-    state = env.setState(ai_score, player_score)
-    state = np.reshape(state, [1, state_size])
-
-    action = agent.get_action(state)
 
     print("playerId: ", playerId)
-    print("player_previous: ", player_previous)
-    print("ai_previous: ", ai_previous)
-    print("player_card: ", player_card)
-    print("Player_Score: ", player_score)
-    print("AI_Score: ", ai_score)
-    print("action: ", action)
+    print("match: ", match)
