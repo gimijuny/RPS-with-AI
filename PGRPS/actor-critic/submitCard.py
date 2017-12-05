@@ -46,11 +46,11 @@ class A2CAgent:
         self.critic_updater = self.critic_optimizer()
 
         if self.load_model:
-            self.actor.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor_300.h5")
-            self.critic.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic_300.h5")
+            self.actor.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor_100.h5")
+            self.critic.load_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic_100.h5")
 
-            # self.actor.load_weights("./save_model/rps_actor_500.h5")
-            # self.critic.load_weights("./save_model/rps_critic_500.h5")
+            # self.actor.load_weights("./save_model/rps_actor_100.h5")
+            # self.critic.load_weights("./save_model/rps_critic_100.h5")
 
     # actor: 상태를 받아 각 행동의 확률을 계산
     def build_actor(self):
@@ -132,6 +132,9 @@ if __name__ == "__main__":
 
     if player_card != None:
         env.setPrevious(ai_previous, player_previous)
+        rsp = player_card
+    else:
+        rsp = player_previous
 
     state_size = 8
     action_size = 3
@@ -143,6 +146,13 @@ if __name__ == "__main__":
     state = np.reshape(state, [1, state_size])
 
     action = agent.get_action(state)
+    next_state, reward, done, gameOver = env.step(action, rsp)
+    next_state = np.reshape(next_state, [1, state_size])
+
+    agent.train_model(state, action, reward, next_state, done)
+
+    agent.actor.save_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_actor_100.h5")
+    agent.critic.save_weights("../RPS-with-AI/PGRPS/actor-critic/save_model/rps_critic_100.h5")
 
     print("playerId: ", playerId)
     print("player_previous: ", player_previous)
